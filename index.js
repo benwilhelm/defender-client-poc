@@ -7,6 +7,7 @@ var uiInput = require("./ui/input");
 var uiTimer = require("./ui/timer");
 var uiGuesses = require("./ui/log");
 var _ = require('lodash');
+var arc = require('arc');
 
 var screen = Blessed.screen({
     smartCSR: true,
@@ -31,8 +32,31 @@ screen.append(input);
 
 var map = uiMap.generate(screen)
 screen.append(map);
-map.addMarker({"lon" : "0", "lat" : "0", color: "red", char: "O" })
-map.addMarker({"lon" : "-87", "lat" : "42", color: "red", char: "X" })
+var chi = {
+    lat: 42,
+    lon: -88
+}
+
+var mos = {
+    lat: 55,
+    lon: 37
+}
+
+var generator = new arc.GreatCircle({
+    x: mos.lon,
+    y: mos.lat
+}, {
+    x: chi.lon,
+    y: chi.lat
+}, {
+    name: "Moscow to Chicago"
+})
+var trajectory = generator.Arc(20);
+_.each(trajectory.geometries[0].coords, function(coord){
+    map.addMarker({lon: coord[0], lat: coord[1], color: "red", char: '*'});
+})
+map.addMarker({"lon" : chi.lon, "lat" : chi.lat, color: "red", char: "x" })
+map.addMarker({"lon" : mos.lon, "lat" : mos.lat, color: "red", char: "x" })
 
 
 var timerWidget = uiTimer.getWidget(screen);
@@ -53,7 +77,8 @@ screen.key(['escape', 'i'], function() {
 
 input.key('enter', function(ch, key) {
     var message = this.getValue();
-    guessLog.log(message);
+    var prefix = Math.random() < 0.2 ? "* " : "  ";
+    guessLog.log(prefix + message);
     this.clearValue();
     screen.render();
 })

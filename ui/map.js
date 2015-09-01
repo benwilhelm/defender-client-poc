@@ -32,11 +32,11 @@ module.exports = {
             region: 'rus',
 
             style: {
-                stroke: "red",
-                fill: "red",
-                shapeColor: "red",
+                stroke: "green",
+                fill: "green",
+                shapeColor: "green",
                 // fg: "red",
-                // bg: "gray"
+                bg: "black"
             }
         });
         

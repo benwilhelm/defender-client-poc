@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "arc": "^0.1.0",
     "blessed": "^0.1.80",
     "blessed-contrib": "^2.3.3",
     "lodash": "^3.10.1"

@@ -35,7 +35,7 @@ screen.append(input);
 
 var map = uiMap.generate(screen)
 screen.append(map);
-
+map.ctx.save();
 
 io.socket.get("/icbms", function(err, res) {
     _.each(res.body, function(icbm){
@@ -43,39 +43,51 @@ io.socket.get("/icbms", function(err, res) {
         map.addMarker({
             lat: icbm.origin.lat,
             lon: icbm.origin.lon,
-            char: '.'
+            char: '.',
+            color: 'white'
         })
     })
 
     // TODO - abstract this spaghetti
     io.socket.on('icbm', function(event) {
         if (event.verb === 'updated') {
+            
             var icbm = event.data;
+            screen.log(icbm.eventType)
             if (icbm.eventType === 'launch') {
+                map.addMarker({
+                    lat: icbm.origin.lat,
+                    lon: icbm.origin.lon,
+                    char: 'x'
+                });
+                map.ctx.save();
+            }
+            
+            if (icbm.eventType === 'advance') {
+                var pathToDate = icbm.trajectory.slice(0, icbm.trajectoryPoint);
 
-                map.ctx.moveTo(icbm.trajectory[0], icbm.trajectory[1])
+                map.ctx.restore();
                 map.ctx.beginPath();
-                map.ctx.fillStyle = 'rgb(255,255,0)';
-                map.ctx.fill();
-                map.ctx.lineWidth = 3;
-                // map.ctx.strokeStyle = 'rgb(255,255,0)';
-                _.each(icbm.trajectory, function(coord){
+                _.each(pathToDate, function(coord){
                     var x = map.innerMap.degreesOfLongitudeToScreenX(coord[0])
                     var y = map.innerMap.degreesOfLatitudeToScreenY(coord[1])
                     map.ctx.lineTo(x, y);
                 })
                 map.ctx.stroke();
-
                 map.addMarker({
                     lat: icbm.origin.lat,
                     lon: icbm.origin.lon,
                     char: 'x'
-                })
+                });
 
+            }
+            
+            if (icbm.eventType === 'impact') {
                 map.addMarker({
                     lat: icbm.target.lat,
-                    lon: icbm.target.lon,
-                    char: 'O'
+                    lon: icbm.origin.lon,
+                    char: "O",
+                    color: 'red'
                 })
             }
         }
@@ -103,7 +115,7 @@ screen.key(['escape', 'i'], function() {
 input.key('enter', function(ch, key) {
     var message = this.getValue();
 
-    if (message = 'render') {
+    if (message === 'render') {
         screen.render();
         return;
     }

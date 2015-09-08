@@ -32,8 +32,7 @@ module.exports = {
             region: 'rus',
 
             style: {
-                stroke: "green",
-                fill: "green",
+                // fill: "red",
                 shapeColor: "green",
                 // fg: "red",
                 bg: "black"

@@ -1,14 +1,15 @@
 var Blessed = require("blessed");
 var Contrib = require('blessed-contrib');
 
+
 module.secondsRemaining = 120;
 
 module.lcd = {};
 
 module.exports = {
-    
+
     getWidget: function(screen) {
-        var lcd = module.lcd = Contrib.lcd({ 
+        var lcd = module.lcd = Contrib.lcd({
             width: 30,
             height: 8,
             right: 0,
@@ -29,28 +30,28 @@ module.exports = {
                 bg: "black"
             }
         })
-        
+
         return lcd;
     },
-    
-    start: function() {
-        var timeRemaining = getTime(module.secondsRemaining)
-        module.lcd.setDisplay(timeRemaining);
-        
-        if (module.secondsRemaining > 0) {
-            module.secondsRemaining--;
-            setTimeout(module.exports.start, 1000);
-        }
+
+    start: function(io) {
+        io.socket.get('/timer', function(err, rslt) {
+            // if (err) throw err;
+            io.socket.on("tick", function(payload) {
+                var timeRemaining = getTime(payload.timeToFirstImpact)
+                module.lcd.setDisplay(timeRemaining);
+            })
+        })
     }
 }
 
 function getTime(secondsRemaining) {
     var min = Math.floor(secondsRemaining / 60).toString();
     var sec = (secondsRemaining % 60).toString();
-    if (sec.length === 1) { 
+    if (sec.length === 1) {
         sec = "0" + sec;
     }
-    
+
     divider = sec % 2 ? ":" : " "
     return min + divider + sec;
 }

@@ -53,7 +53,6 @@ io.socket.get("/icbms", function(err, res) {
         if (event.verb === 'updated') {
             
             var icbm = event.data;
-            screen.log(icbm.eventType)
             if (icbm.eventType === 'launch') {
                 map.addMarker({
                     lat: icbm.origin.lat,
@@ -66,29 +65,27 @@ io.socket.get("/icbms", function(err, res) {
             if (icbm.eventType === 'advance') {
                 var pathToDate = icbm.trajectory.slice(0, icbm.trajectoryPoint);
 
-                map.ctx.restore();
                 map.ctx.beginPath();
-                _.each(pathToDate, function(coord){
-                    var x = map.innerMap.degreesOfLongitudeToScreenX(coord[0])
-                    var y = map.innerMap.degreesOfLatitudeToScreenY(coord[1])
-                    map.ctx.lineTo(x, y);
+                _.each(pathToDate, function(coord, idx){
+                    if (idx > 3) {
+                        var x = map.innerMap.degreesOfLongitudeToScreenX(coord[0])
+                        var y = map.innerMap.degreesOfLatitudeToScreenY(coord[1])
+                        map.ctx.lineTo(x, y);
+                    }
                 })
-                map.ctx.stroke();
-                map.addMarker({
-                    lat: icbm.origin.lat,
-                    lon: icbm.origin.lon,
-                    char: 'x'
-                });
-
+                map.ctx.stroke();                
             }
             
             if (icbm.eventType === 'impact') {
-                map.addMarker({
-                    lat: icbm.target.lat,
-                    lon: icbm.origin.lon,
-                    char: "O",
-                    color: 'red'
-                })
+                
+                setTimeout(function(){
+                    map.addMarker({
+                        lat: icbm.target.lat,
+                        lon: icbm.origin.lon,
+                        char: "O",
+                        color: 'red'
+                    })
+                }, 1000)
             }
         }
     })
